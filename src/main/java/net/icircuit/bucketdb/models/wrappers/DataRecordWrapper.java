@@ -4,7 +4,7 @@ import net.icircuit.bucketdb.models.proto.DataRecordProto.*;
 
 import java.util.Date;
 
-public class DataRecordWrapper {
+public class DataRecordWrapper implements Comparable<DataRecordWrapper>{
     DataRecord dataRecord;
     public DataRecordWrapper(DataRecord dataRecord) {
         this.dataRecord = dataRecord;
@@ -33,5 +33,11 @@ public class DataRecordWrapper {
         if(dataRecord.getTtl() == 0 ) return  true;
         if(dataRecord.getTtl()+dataRecord.getTimestamp() < currentTime) return false;
         return true;
+    }
+
+    @Override
+    public int compareTo(DataRecordWrapper that) {
+        if(this == that)return 0;
+        return this.getDataRecord().getRKey().compareTo(that.getDataRecord().getRKey());
     }
 }

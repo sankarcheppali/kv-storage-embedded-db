@@ -45,6 +45,7 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
                     .map(sortedFileRecord -> Paths.get(bucketFolderPath.toString(),sortedFileRecord.getSortedFileName()))
                     .collect(Collectors.toList());
             sortedFileList = sortedFilePathList.stream().map(SortedFile::new).collect(Collectors.toList());
+            cleanUpBucket();
         }else{
             // sorted file list is empty
             sortedFilePathList = new ArrayList<>();
@@ -135,8 +136,8 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
     private void buildSortedFileTerminationKeys() {
         TreeSet<String> set = new TreeSet<>();
         for (SortedFile sortedFile : sortedFileList) {
-            sortedFileTerminationKeys.add(sortedFile.startKey());
-            sortedFileTerminationKeys.add(sortedFile.endKey());
+            set.add(sortedFile.startKey());
+            set.add(sortedFile.endKey());
         }
         sortedFileTerminationKeys = set;
     }
@@ -173,12 +174,14 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
                 .setBucketManifest(bucketManifest)
                 .setBucketManifestCRC(manifestCrc(bucketManifest))
                 .build();
-        try(OutputStream os= Files.newOutputStream(createManifestFile())){
+        Path tmpManifestFile = createManifestFile();
+        try(OutputStream os= Files.newOutputStream(tmpManifestFile)){
             bucketManifestFile.writeTo(os);
         }catch (Exception e){
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+        manifestFile = tmpManifestFile;
     }
 
     public boolean readyForSplit() {
@@ -306,5 +309,9 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
 
     public Path getBucketFolderPath() {
         return bucketFolderPath;
+    }
+
+    public Path getManifestFile() {
+        return manifestFile;
     }
 }

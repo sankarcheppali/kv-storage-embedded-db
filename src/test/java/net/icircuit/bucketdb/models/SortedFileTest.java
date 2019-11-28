@@ -2,20 +2,18 @@ package net.icircuit.bucketdb.models;
 
 import net.icircuit.bucketdb.models.proto.DataRecordProto;
 import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-
-import static org.hamcrest.CoreMatchers.is;
-
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 public class SortedFileTest {
 
-    public static Path bucketPath = Paths.get("./");
+    public static Path bucketPath = Paths.get("../db");
     public static List<DataRecordWrapper> dataRecordList = new ArrayList<>(Arrays.asList(
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key1").setRValue("value1").build()),
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key2").setRValue("value2").build()),
@@ -67,6 +65,13 @@ public class SortedFileTest {
         int sizeAfterDelete = SortedFile.list(bucketPath).size();
         assertTrue("listing failed",sizeBeforeDelete > 0);
         assertThat("deletion failed",sizeAfterDelete,is(0));
+    }
+
+    @Before
+    @After
+    public void delete() throws IOException {
+        List<Path> sortefPathList= SortedFile.list(bucketPath);
+        sortefPathList.forEach(path -> path.toFile().delete());
     }
 
 }

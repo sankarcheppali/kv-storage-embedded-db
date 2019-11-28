@@ -5,6 +5,7 @@ import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 public class DBWriter {
@@ -16,6 +17,7 @@ public class DBWriter {
         DataRecord dataRecord = DataRecord.newBuilder()
                 .setRKey(key)
                 .setRValue(value.toString())
+                .setTimestamp(new Date().getTime())
                 .build();
         memTable.addRecord(new DataRecordWrapper(dataRecord));
     }
@@ -24,6 +26,7 @@ public class DBWriter {
                 .setRKey(key)
                 .setRValue(value.toString())
                 .setTtl(ttl)
+                .setTimestamp(new Date().getTime())
                 .build();
         memTable.addRecord(new DataRecordWrapper(dataRecord));
     }
