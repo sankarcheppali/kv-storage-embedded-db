@@ -211,7 +211,7 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
     private void runCompaction(List<SortedFile> compactionTargets) {
         Collection<DataRecordWrapper> dataRecordWrappers = sortedFileList.subList(1, sortedFileList.size()).stream()
                 .flatMap(sortedFile -> sortedFile.readAll().stream())
-                .collect(CustomeCollectors.toLinkedHashSet());
+                .collect(CustomeCollectors.toTreeSet());
         Path newSrotedFile = createSortedFile(dataRecordWrappers);
         addSortedFile(newSrotedFile);
         compactionTargets.forEach(this::removeSortedFile);
@@ -221,7 +221,7 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
     public List<List<DataRecordWrapper>> split() {
         List<DataRecordWrapper> dataRecordWrapperList = sortedFileList.stream()
                 .flatMap(sortedFile -> sortedFile.readAll().stream())
-                .collect(CustomeCollectors.toLinkedHashSet())
+                .collect(CustomeCollectors.toTreeSet())
                 .stream()
                 .filter(DataRecordWrapper::isValid) // remove expired items
                 .collect(Collectors.toList());

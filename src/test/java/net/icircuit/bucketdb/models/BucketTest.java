@@ -28,6 +28,12 @@ public class BucketTest {
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key14").setRValue("value14").build()),
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key5").setRValue("value5").build())
     )).stream().collect(CustomeCollectors.toTreeSet());
+    public static Collection<DataRecordWrapper> dataRecordList3 = new ArrayList<>(Arrays.asList(
+            new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key31").setRValue("value11").build()),
+            new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key32").setRValue("value12").build()),
+            new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key34").setRValue("value14").build()),
+            new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key5").setRValue("value35").build())
+    )).stream().collect(CustomeCollectors.toTreeSet());
 
     @Test
     public void manifestFiles() {
@@ -44,19 +50,41 @@ public class BucketTest {
     }
 
     @Test
-    public void list() {
-    }
-
-    @Test
-    public void create() {
-    }
-
-    @Test
-    public void createSortedFile() {
-    }
-
-    @Test
     public void getRecord() {
+        Bucket bucket = Bucket.create(dbPath);
+        //key should not be present
+        Optional<DataRecordWrapper> optionalDataRecordWrapper = bucket.getRecord("key3");
+        assertThat("key should not be present",optionalDataRecordWrapper.isPresent(),is(false));
+
+        bucket.createSortedFile(dataRecordList1);
+        optionalDataRecordWrapper = bucket.getRecord("key3");
+        assertThat("key should be present",optionalDataRecordWrapper.isPresent(),is(true));
+
+        bucket.createSortedFile(dataRecordList2);
+        optionalDataRecordWrapper = bucket.getRecord("key3");
+        //key should not be present
+        assertThat("key should not be present",optionalDataRecordWrapper.isPresent(),is(false));
+
+        assertThat("key sholud have updated value",
+                bucket.getRecord("key1").get().getDataRecord().getRValue(),is("value11"));
+    }
+
+    @Test
+    public void compaction(){
+        Bucket bucket = Bucket.create(dbPath);
+        bucket.createSortedFile(dataRecordList1);
+        assertThat("compaction should not be required",bucket.readyForCompaction(),is(false));
+        bucket.createSortedFile(dataRecordList2);
+        bucket.createSortedFile(dataRecordList3);
+        bucket.createSortedFile(dataRecordList3);
+        bucket.createSortedFile(dataRecordList3);
+        bucket.createSortedFile(dataRecordList3);
+        bucket.createSortedFile(dataRecordList3);
+        assertThat("compaction should be required",bucket.readyForCompaction(),is(true));
+        bucket.runCompaction();
+        assertThat("compaction should not be required",bucket.readyForCompaction(),is(false));
+        assertThat("key should have updated value",
+                bucket.getRecord("key5").get().getDataRecord().getRValue(),is("value35"));
     }
 
     @Before
@@ -66,7 +94,7 @@ public class BucketTest {
             try {
                 Files.list(path).forEach(path1 -> path1.toFile().delete());
                 path.toFile().delete();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
