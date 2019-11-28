@@ -39,7 +39,7 @@ public class DataBlockReader {
         return readRecordIndexBlock().getIndexList()
                 .stream()
                 .map(indexRecord -> readDataRecord(indexRecord))
-                .collect(CustomeCollectors.toLinkedHashSet());
+                .collect(Collectors.toList());
     }
     public RecordIndexBlock readRecordIndexBlock() {
         try{

@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
@@ -211,7 +212,9 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
     private void runCompaction(List<SortedFile> compactionTargets) {
         Collection<DataRecordWrapper> dataRecordWrappers = sortedFileList.subList(1, sortedFileList.size()).stream()
                 .flatMap(sortedFile -> sortedFile.readAll().stream())
-                .collect(CustomeCollectors.toTreeSet());
+                .collect(Collectors.toMap(DataRecordWrapper::getKey, Function.identity(),(v1, v2) -> v2,TreeMap::new))// we need to remove duplicates
+                .values();//sort the values
+        // we need to remove duplicates,donot remove deleted records in compaction
         Path newSrotedFile = createSortedFile(dataRecordWrappers);
         addSortedFile(newSrotedFile);
         compactionTargets.forEach(this::removeSortedFile);
@@ -221,8 +224,8 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
     public List<List<DataRecordWrapper>> split() {
         List<DataRecordWrapper> dataRecordWrapperList = sortedFileList.stream()
                 .flatMap(sortedFile -> sortedFile.readAll().stream())
-                .collect(CustomeCollectors.toTreeSet())
-                .stream()
+                .collect(Collectors.toMap(DataRecordWrapper::getKey, Function.identity(),(v1, v2) -> v2,TreeMap::new))// we need to remove duplicates
+                .values().stream()//sort the values
                 .filter(DataRecordWrapper::isValid) // remove expired items
                 .collect(Collectors.toList());
         int numberOfRecords = dataRecordWrapperList.size();

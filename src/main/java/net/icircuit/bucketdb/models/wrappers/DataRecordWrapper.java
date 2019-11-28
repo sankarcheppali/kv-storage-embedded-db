@@ -14,12 +14,15 @@ public class DataRecordWrapper implements Comparable<DataRecordWrapper>{
         return dataRecord;
     }
 
+    public String getKey(){
+        return getDataRecord().getRKey();
+    }
     @java.lang.Override
     public int hashCode() {
         return dataRecord.getRKey().hashCode();
     }
     @java.lang.Override
-    public boolean equals(final Object that){
+    public boolean equals(final Object that){//we are changing the semantics here, is it ok ?
         if(this == that)return true;
         if(that instanceof DataRecordWrapper){
             return dataRecord.getRKey().equals(((DataRecordWrapper) that).getDataRecord().getRKey());

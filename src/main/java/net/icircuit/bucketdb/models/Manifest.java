@@ -12,12 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 
-import static com.sun.xml.internal.ws.spi.db.BindingContextFactory.LOGGER;
-
 public class Manifest {
+    private final static Logger LOGGER = Logger.getLogger(SortedFileReader.class.getName());
     private String filePrefix="MANIFEST";
     private Path dbPathFolder;
     private Path manifestFile;

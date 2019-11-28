@@ -33,12 +33,13 @@ public class MemTable {
         tableMapList = new ArrayList<>();
         for (WHLog whLog : whLogList) {
             Map<String, DataRecordWrapper> hydrate = hydrate(whLog);
-            tableMapList.add(hydrate);
+            tableMapList.add(hydrate); // sort by keys
         }
     }
 
     public static Map<String, DataRecordWrapper> hydrate(WHLog whLog) throws IOException {
-        return whLog.readAll().stream().collect(Collectors.toMap(DataRecord::getRKey, DataRecordWrapper::new));
+        return whLog.readAll().stream()
+                .collect(Collectors.toMap(DataRecord::getRKey, DataRecordWrapper::new,(v1, v2) -> v2,TreeMap::new));
     }
 
     public boolean isReadyForSpill() {

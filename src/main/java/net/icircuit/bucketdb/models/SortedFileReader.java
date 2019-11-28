@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 //thread safe
 public class SortedFileReader {
@@ -35,7 +36,7 @@ public class SortedFileReader {
         return dataIndexBlock.getIndexList().stream()
                 .map(this::dataBlockReader)
                 .flatMap(dataBlockReader -> dataBlockReader.readAll().stream())
-                .collect(CustomeCollectors.toLinkedHashSet());
+                .collect(Collectors.toList());
     }
 
     public DataIndexBlock readDataIndexBlock(){
