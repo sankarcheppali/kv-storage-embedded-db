@@ -7,6 +7,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -23,8 +24,8 @@ public class  SortedFileWriter{
     private FileFooterProto.FileFooter fileFooter;
     private Path filePath;
 
-    public SortedFileWriter(List<DataRecordWrapper> records, Path filePath) {
-        this.records = records;
+    public SortedFileWriter(Collection<DataRecordWrapper> records, Path filePath) {
+        this.records = new ArrayList<>(records);
         this.filePath = filePath;
     }
 

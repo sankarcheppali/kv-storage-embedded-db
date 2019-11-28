@@ -5,30 +5,54 @@ import net.icircuit.bucketdb.exceptions.InvalidTTLException;
 import net.icircuit.bucketdb.exceptions.InvalidValueException;
 import net.icircuit.bucketdb.exceptions.KvDbOperationFailedException;
 import net.icircuit.bucketdb.models.Config;
+import net.icircuit.bucketdb.models.DBReader;
 import net.icircuit.bucketdb.models.DBWriter;
+import net.icircuit.bucketdb.models.Manifest;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 public class BucketDB implements KeyValueDB<JSONObject>{
 
+    private static Map<Path,BucketDB> dbs = new HashMap<>();
+    private Manifest manifest;
     private DBWriter dbWriter;
-    private BucketDB(){}
-    private BucketDB(String path){}
+    private DBReader dbReader;
 
+    private BucketDB(Path path) throws IOException {
+        manifest = new Manifest(path);
+        dbWriter = manifest.getDBWriter();
+        dbReader = manifest.getDbReader();
+    }
+    public  static BucketDB getInstance() throws IOException {
+        return getInstance(Config.DEFAULT_DB_PATH);
+    }
+    public synchronized static BucketDB getInstance(String path) throws IOException {
+        Path dbPath = Paths.get(path);
+        if(dbPath.toFile().exists() && !dbPath.toFile().isDirectory()){
+            throw new IllegalArgumentException("path should be a directory");
+        }
+        if(!dbs.containsKey(dbPath)){
+            dbs.put(dbPath,new BucketDB(dbPath));
+        }
+        return dbs.get(dbPath);
+    }
 
     @Override
     public CompletableFuture<Optional<JSONObject>> get(String key) {
-        return null;
+        if(key.length() > Config.MAX_KEY_LENGTH){
+            throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
+        }
+        return CompletableFuture.supplyAsync(()-> dbReader.get(key));
     }
 
-    @Override
-    public CompletableFuture<Boolean> containsKey(String key) {
-        return null;
-    }
 
     @Override
     public CompletableFuture put(String key, JSONObject value){

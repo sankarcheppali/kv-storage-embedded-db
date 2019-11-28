@@ -19,8 +19,12 @@ public class DataRecordWrapper {
         return dataRecord.getRKey().hashCode();
     }
     @java.lang.Override
-    public boolean equals(final java.lang.Object obj){
-        return this.equals(obj);
+    public boolean equals(final Object that){
+        if(this == that)return true;
+        if(that instanceof DataRecordWrapper){
+            return dataRecord.getRKey().equals(((DataRecordWrapper) that).getDataRecord().getRKey());
+        }
+        return false;
     }
     // checks if record is expired or deleted
     public boolean isValid(){

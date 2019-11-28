@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 //thread safe
 public class DataBlockReader {
     private ByteBuffer byteBuffer;
-    RecordIndexBlock recordIndexBlock;
+    private RecordIndexBlock recordIndexBlock;
     public DataBlockReader(ByteBuffer byteBuffer) {
         this.byteBuffer = byteBuffer;
     }

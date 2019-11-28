@@ -8,9 +8,9 @@ import java.util.List;
 
 public class BucketSplit {
     private Bucket bucket; // bucket value can be null, in which case new bucket needs to be created to save this data records
-    private List<DataRecordWrapper> dataRecordWrapperList;
+    private Collection<DataRecordWrapper> dataRecordWrapperList;
 
-    public BucketSplit(Bucket bucket, List<DataRecordWrapper> dataRecordWrapperList) {
+    public BucketSplit(Bucket bucket, Collection<DataRecordWrapper> dataRecordWrapperList) {
         this.bucket = bucket;
         this.dataRecordWrapperList = dataRecordWrapperList;
     }
@@ -19,7 +19,7 @@ public class BucketSplit {
         return bucket;
     }
 
-    public List<DataRecordWrapper> getDataRecordWrapperList() {
+    public Collection<DataRecordWrapper> getDataRecordWrapperList() {
         return dataRecordWrapperList;
     }
 }

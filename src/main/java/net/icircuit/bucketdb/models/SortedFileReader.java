@@ -17,12 +17,15 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 //thread safe
 public class SortedFileReader {
-
+    private final static Logger LOGGER = Logger.getLogger(SortedFileReader.class.getName());
     private ByteBuffer sortedFileBuffer;
     private int size;
+    private FileFooter fileFooter;
+    private DataIndexBlock dataIndexBlock;
     public SortedFileReader(ByteBuffer sortedFileBuffer,int size) {
         this.sortedFileBuffer = sortedFileBuffer;
         this.size = size;
@@ -36,27 +39,32 @@ public class SortedFileReader {
     }
 
     public DataIndexBlock readDataIndexBlock(){
-        try{
-            FileFooter fileFooter = readFileFooter();
-            ByteBuffer dataIndexBlockBuffer = slice(fileFooter.getDibOffset(),fileFooter.getDibLength());
-            DataIndexBlock dataIndexBlock = DataIndexBlock.parseFrom(dataIndexBlockBuffer);
-            return dataIndexBlock;
+        if(dataIndexBlock == null){
+            try{
+                FileFooter fileFooter = readFileFooter();
+                ByteBuffer dataIndexBlockBuffer = slice(fileFooter.getDibOffset(),fileFooter.getDibLength());
+                dataIndexBlock = DataIndexBlock.parseFrom(dataIndexBlockBuffer);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
         }
-        catch (Exception e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        return dataIndexBlock;
     }
 
     public FileFooter readFileFooter() {
-        try{
-            int  footerLength= slice(size-4,4).getInt();
-            ByteBuffer footerBuffer = slice(size-footerLength-4,footerLength);
-            return  FileFooter.parseFrom(footerBuffer);
-        }catch (Exception e){
-            e.printStackTrace();
-            throw new RuntimeException(e);
+        if(fileFooter ==null){
+            try{
+                int  footerLength= slice(size-4,4).getInt();
+                ByteBuffer footerBuffer = slice(size-footerLength-4,footerLength);
+                fileFooter = FileFooter.parseFrom(footerBuffer);
+            }catch (Exception e){
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
         }
+        return  fileFooter;
     }
 
 

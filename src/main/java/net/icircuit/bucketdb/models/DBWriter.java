@@ -1,6 +1,7 @@
 package net.icircuit.bucketdb.models;
 
 import net.icircuit.bucketdb.models.proto.DataRecordProto.*;
+import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class DBWriter {
                 .setRKey(key)
                 .setRValue(value.toString())
                 .build();
-        memTable.addRecord(dataRecord);
+        memTable.addRecord(new DataRecordWrapper(dataRecord));
     }
     public void add(String key,JSONObject value,long ttl) throws IOException{
         DataRecord dataRecord = DataRecord.newBuilder()
@@ -24,7 +25,7 @@ public class DBWriter {
                 .setRValue(value.toString())
                 .setTtl(ttl)
                 .build();
-        memTable.addRecord(dataRecord);
+        memTable.addRecord(new DataRecordWrapper(dataRecord));
     }
     public void delete(String key) throws IOException {
         memTable.deleteRecord(key);
