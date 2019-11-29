@@ -29,7 +29,7 @@ public class BucketDBBulkWriteTest {
             jsonObject.put("address","address"+i);
             bucketDB.put("key"+i,jsonObject);
         }
-        assertTrue("size of the db shold be more than 100MB",bucketDB.size()>100-0000-000);
+        assertTrue("size of the db should be more than 10MB",bucketDB.size()>10000000);
     }
     @After
     public void cleanup() throws IOException {

@@ -114,5 +114,8 @@ class MemTable {
         return Optional.empty();
     }
 
+    public long whLogSize(){
+        return  whLogList.stream().map(WHLog::size).reduce(0L,(whl1,whl2) -> whl1+whl2);
+    }
 }
 

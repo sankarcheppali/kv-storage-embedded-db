@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -21,7 +22,7 @@ public class BucketDBBulkReadTest {
     public void setup() throws IOException {
         cleanup();
         bucketDB = BucketDB.getInstance(dbPath);
-        for(int i=0;i<1000000;i++){
+        for(int i=0;i<1-000-000;i++){
             JSONObject jsonObject= new JSONObject();
             jsonObject.put("name","name"+i);
             jsonObject.put("address","address"+i);
@@ -30,10 +31,13 @@ public class BucketDBBulkReadTest {
     }
     @Test
     public void bulkRead(){
+        Date start = new Date();
         for(int i=0;i<1000000;i++){
             Optional<JSONObject> optional = bucketDB.get("key"+i);
             assertTrue("missing key :"+"key"+i,optional.isPresent());
         }
+        Date end = new Date();
+        System.out.println("Read time "+(end.getTime()-start.getTime()));
     }
     @After
     public void cleanup() throws IOException {

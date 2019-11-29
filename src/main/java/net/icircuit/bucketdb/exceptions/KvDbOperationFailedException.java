@@ -7,7 +7,7 @@ public class KvDbOperationFailedException extends RuntimeException {
         super(message);
     }
 
-    public KvDbOperationFailedException(IOException e) {
+    public KvDbOperationFailedException(Exception e) {
         super(e);
     }
 }
