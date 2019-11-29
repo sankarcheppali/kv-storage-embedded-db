@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 public class BucketTest {
-    public static Path dbPath = Paths.get("../db");
+    public static Path dbPath = Paths.get("../db-bucket-test");
     public static Collection<DataRecordWrapper> dataRecordList1 = new ArrayList<>(Arrays.asList(
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key1").setRValue("value1").build()),
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key2").setRValue("value2").build()),
@@ -35,6 +35,11 @@ public class BucketTest {
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key5").setRValue("value35").build())
     )).stream().collect(CustomeCollectors.toTreeSet());
 
+    @BeforeClass
+    public static void setup() throws IOException {
+        if(!dbPath.toFile().exists())
+            Files.createDirectory(dbPath);
+    }
     @Test
     public void manifestFiles() {
         Bucket bucket = Bucket.create(dbPath);

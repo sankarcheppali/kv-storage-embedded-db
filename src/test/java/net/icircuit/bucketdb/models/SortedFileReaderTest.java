@@ -27,7 +27,7 @@ public class SortedFileReaderTest {
 
     ByteBuffer sortedFileBuffer;
     SortedFileReader sortedFileReader;
-    static Path filePath = Paths.get("./sf-read-test.bdb");;
+    static Path filePath = Paths.get("../sf-read-test.bdb");;
     @BeforeClass
     public static void prepareDBFile() throws IOException{
         List<DataRecordWrapper> dataRecordList = new ArrayList<>(Arrays.asList(

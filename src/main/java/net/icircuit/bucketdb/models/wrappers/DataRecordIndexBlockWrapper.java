@@ -19,7 +19,7 @@ public class DataRecordIndexBlockWrapper {
 
     public Optional<RecordIndexBlockProto.RecordIndexBlock.IndexRecord> search(String key){
          int index= Collections.binarySearch(keys,key);
-         if(index == -1) return Optional.empty();
+         if(index < 0) return Optional.empty();
          return Optional.of(indexBlock.getIndexList().get(index));
     }
     public RecordIndexBlockProto.RecordIndexBlock getIndexBlock() {

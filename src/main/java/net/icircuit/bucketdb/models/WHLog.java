@@ -19,9 +19,18 @@ import java.util.stream.Collectors;
 public class WHLog {
     private final static Logger LOGGER = Logger.getLogger(WHLog.class.getName());
     private static String filePrefix = "WHL";
+    private DataOutputStream dos;
     Path whlFilePath;
     public WHLog(Path whlFilePath) {
         this.whlFilePath = whlFilePath;
+        OutputStream os = null;
+        try {
+            os = Files.newOutputStream(whlFilePath, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        dos = new DataOutputStream(new BufferedOutputStream(os));
     }
     public static WHLog create(Path dbPath) throws IOException {
         return  new WHLog(createWHLFile(dbPath));
@@ -39,20 +48,21 @@ public class WHLog {
                 .collect(Collectors.toList());
     }
     public synchronized void add(DataRecord dataRecord) throws IOException {
-       try(OutputStream os = Files.newOutputStream(whlFilePath, StandardOpenOption.APPEND);
-           DataOutputStream dos = new DataOutputStream(os)){
-           dos.writeInt(dataRecord.getSerializedSize());
-           dataRecord.writeTo(dos);
-       }
+        dos.writeInt(dataRecord.getSerializedSize());
+        dataRecord.writeTo(dos);
+        dos.flush(); //flush is slowing down the write speed by 6x
     }
     public long size(){
         return  whlFilePath.toFile().length();
     }
     public void delete() throws IOException {
+        if(dos!=null){
+            dos.close();
+        }
         Files.deleteIfExists(whlFilePath);
     }
 
-    public Collection<DataRecord> readAll() throws IOException{
+    public synchronized Collection<DataRecord> readAll() throws IOException{
         try(InputStream is = Files.newInputStream(whlFilePath,StandardOpenOption.READ);
             DataInputStream dis = new DataInputStream(is)){
             long fileLength = whlFilePath.toFile().length();

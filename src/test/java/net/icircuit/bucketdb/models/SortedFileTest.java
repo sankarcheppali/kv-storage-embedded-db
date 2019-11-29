@@ -5,6 +5,7 @@ import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
 import org.junit.*;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -13,13 +14,19 @@ import static org.junit.Assert.*;
 
 public class SortedFileTest {
 
-    public static Path bucketPath = Paths.get("../db");
+    public static Path bucketPath = Paths.get("../db-sortedfile");
     public static List<DataRecordWrapper> dataRecordList = new ArrayList<>(Arrays.asList(
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key1").setRValue("value1").build()),
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key2").setRValue("value2").build()),
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key3").setRValue("value3").build())
     ));
 
+
+    @BeforeClass
+    public static void setup() throws IOException {
+        if(!bucketPath.toFile().exists())
+            Files.createDirectory(bucketPath);
+    }
     @Test
     public void persistAndRead() throws IOException {
         Path sortedFilePath = SortedFile.createFile(bucketPath);

@@ -25,6 +25,8 @@ public class Manifest {
     private List<Bucket> bucketList;
     private MemTable memTable;
     private DBReader dbReader;
+    private Thread houseKeepingThread;
+
     public Manifest(Path dbPathFolder) throws IOException {
         this.dbPathFolder = dbPathFolder;
         //if db path is not present, create it
@@ -64,6 +66,7 @@ public class Manifest {
 
         memTable = new MemTable(dbPathFolder);
         dbReader = new DBReader(memTable,bucketList);
+        startHouseKeepingThread();
     }
     public DBWriter getDBWriter(){
         return new DBWriter(memTable);
@@ -85,6 +88,7 @@ public class Manifest {
             bucketsOnDisk.stream().filter(path -> !bucketPathList.contains(path))
                     .forEach(path -> {
                         try {
+                            Files.list(path).forEach(path1 -> path1.toFile().delete());
                             Files.deleteIfExists(path);
                             LOGGER.info("deleted bucket "+path);
                         } catch (IOException e) {
@@ -121,11 +125,29 @@ public class Manifest {
         }
     }
 
+    private void startHouseKeepingThread(){
+        houseKeepingThread= new Thread(() -> {
+           while (true){
+               try {
+                   houseKeeping();
+                   Thread.sleep(Config.HOUSE_KEEPING_TASK_FREQ);
+               } catch (Exception e) {
+                   e.printStackTrace();
+               }
+           }
+        });
+        houseKeepingThread.start();
+    }
     private synchronized  void houseKeeping() throws IOException {
+        LOGGER.info("housekeeping task started");
+        Date start = new Date();
         if(memTable.isReadyForSpill()){
             memTableHouseKeeping();
         }
         bucketHouseKeeping();
+        Date end = new Date();
+        dbReader.setBuckets(bucketList);
+        LOGGER.info("housekeeping task completed,took "+(end.getTime() - start.getTime()));
     }
     private synchronized void memTableHouseKeeping() throws IOException {
         Pair<WHLog, Map<String, DataRecordWrapper>> whLogMapPair= memTable.whlogReadyForSpill();
@@ -146,6 +168,7 @@ public class Manifest {
     private synchronized void bucketHouseKeeping(){
         //check for splits
         List<Bucket> bucketsReadySplit = bucketList.stream().filter(Bucket::readyForSplit).collect(Collectors.toList());
+        bucketsReadySplit.sort(Bucket::compareTo);
         bucketsReadySplit.stream().flatMap(bucket -> bucket.split().stream())
                 .forEach(dataRecordWrappers -> {
                     //create bucket and add records
@@ -164,17 +187,21 @@ public class Manifest {
     private synchronized void removeBucket(Bucket bucket){
         bucketList.remove(bucket);
         bucketList.sort(Bucket::compareTo);
-        dbReader.setBuckets(bucketList);
+        //dbReader.setBuckets(bucketList);
         bucketPathList.remove(bucket.getBucketFolderPath());
-
+        LOGGER.info("removing bucket "+bucket);
         saveManifest();
     }
     private synchronized void addBucket(Bucket bucket){
         bucketList.add(bucket);
         bucketList.sort(Bucket::compareTo);
-        dbReader.setBuckets(bucketList);
+        //dbReader.setBuckets(bucketList);
         bucketPathList.add(bucket.getBucketFolderPath());
+        LOGGER.info("adding bucket "+bucket);
         saveManifest();
+    }
+    public long size(){
+        return bucketList.stream().map(Bucket::size).reduce(0L, (a, b) -> a + b);
     }
     private Pair<Path, DBManifestFile> readValidManifest(List<Path> manifestFileList){
        List<Pair<Path,DBManifestFile>> dbManifestFileList =manifestFileList.stream().map(path -> {

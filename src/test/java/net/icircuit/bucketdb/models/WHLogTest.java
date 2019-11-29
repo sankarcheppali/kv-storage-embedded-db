@@ -2,9 +2,11 @@ package net.icircuit.bucketdb.models;
 
 import net.icircuit.bucketdb.models.proto.DataRecordProto;
 import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -16,13 +18,18 @@ import static org.junit.Assert.*;
 
 public class WHLogTest {
 
-    public static Path dbPath = Paths.get("../db");
+    public static Path dbPath = Paths.get("../db-whl");
     public static List<DataRecordWrapper> dataRecordList = new ArrayList<>(Arrays.asList(
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key1").setRValue("value1").build()),
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key2").setRValue("value2").build()),
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key3").setRValue("value3").build())
             ));
 
+    @BeforeClass
+    public static void setup() throws IOException {
+        if(!dbPath.toFile().exists())
+            Files.createDirectory(dbPath);
+    }
     @Test
     public void createAndDelete() throws IOException {
         //create whl file and see if it is actually present on the disk

@@ -105,4 +105,8 @@ class SortedFile {
     public long size(){
         return fileSize;
     }
+    @Override
+    public String toString(){
+        return getSortedFilePath()+":"+startKey()+"-"+endKey();
+    }
 }

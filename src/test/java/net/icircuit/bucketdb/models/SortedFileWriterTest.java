@@ -25,7 +25,7 @@ public class SortedFileWriterTest {
     Path filePath;
     @Before
     public void prepareTest(){
-        filePath = Paths.get("./sf-write-test.bdb");
+        filePath = Paths.get("../sf-write-test.bdb");
         dataRecordList = new ArrayList<>(Arrays.asList(
                 new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key1").setRValue("value1").build()),
                 new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key2").setRValue("value2").build()),

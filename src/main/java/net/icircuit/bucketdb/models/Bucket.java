@@ -117,8 +117,8 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
         try{
             Path sortedFilePath = SortedFile.createFile(bucketFolderPath);
             SortedFile.persist(sortedFilePath, dataRecordWrapperList);
-            addSortedFile(sortedFilePath);
             LOGGER.info("created sorted file "+sortedFilePath);
+            addSortedFile(sortedFilePath);
             return sortedFilePath;
         }catch (Exception e){
             e.printStackTrace();
@@ -130,6 +130,7 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
         sortedFilePathList.add(sortedFilePath);
         SortedFile sortedFile = new SortedFile(sortedFilePath);
         sortedFileList.add(sortedFile);
+        LOGGER.info("added sorted file "+sortedFile);
         buildSortedFileTerminationKeys();
         saveManifest();
     }
@@ -147,6 +148,7 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
     public synchronized void removeSortedFile(SortedFile sortedFile){
         sortedFileList.remove(sortedFile);
         sortedFilePathList.remove(sortedFile.getSortedFilePath());
+        LOGGER.info("removed sorted file "+sortedFile);
         //rebuild the termination keys
         buildSortedFileTerminationKeys();
         saveManifest();
@@ -185,8 +187,11 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
         manifestFile = tmpManifestFile;
     }
 
+    public long size(){
+        return sortedFileList.stream().map(SortedFile::size).reduce(0L, (a, b) -> a + b);
+    }
     public boolean readyForSplit() {
-        return sortedFileList.stream().map(SortedFile::size).reduce(0L, (a, b) -> a + b) > Config.MAX_SIZE_FOR_BUCKET;
+        return  size() > Config.MAX_SIZE_FOR_BUCKET;
     }
 
     public boolean readyForCompaction() {
@@ -204,19 +209,23 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
     public void runCompaction() {
         if(sortedFilePathList.size() <= 1)return; // compaction is required only if there are more than one file
         if(requiresMajorCompaction()){
+            LOGGER.info("major compaction started for "+this);
             runCompaction(new ArrayList<>(sortedFileList));
+            LOGGER.info("major compaction completed for "+this);
         }else if(requiresMinorCompaction()){
+            LOGGER.info("minor compaction started for "+this);
             runCompaction(new ArrayList<>(sortedFileList.subList(1,sortedFileList.size()))); // original list will be mutated);
+            LOGGER.info("minor compaction completed for "+this);
         }
     }
     private void runCompaction(List<SortedFile> compactionTargets) {
-        Collection<DataRecordWrapper> dataRecordWrappers = sortedFileList.subList(1, sortedFileList.size()).stream()
+        Collection<DataRecordWrapper> dataRecordWrappers = compactionTargets.stream()
                 .flatMap(sortedFile -> sortedFile.readAll().stream())
                 .collect(Collectors.toMap(DataRecordWrapper::getKey, Function.identity(),(v1, v2) -> v2,TreeMap::new))// we need to remove duplicates
                 .values();//sort the values
         // we need to remove duplicates,donot remove deleted records in compaction
         Path newSrotedFile = createSortedFile(dataRecordWrappers);
-        addSortedFile(newSrotedFile);
+        //addSortedFile(newSrotedFile);
         compactionTargets.forEach(this::removeSortedFile);
     }
 
@@ -229,6 +238,7 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
                 .filter(DataRecordWrapper::isValid) // remove expired items
                 .collect(Collectors.toList());
         int numberOfRecords = dataRecordWrapperList.size();
+        LOGGER.info("Splitting bucket "+this);
         return new ArrayList<>(Arrays.asList(
                 dataRecordWrapperList.subList(0, numberOfRecords / 2),
                 dataRecordWrapperList.subList(numberOfRecords / 2, numberOfRecords)
@@ -316,5 +326,10 @@ public class Bucket implements Comparable<Bucket>,KeyRange {
 
     public Path getManifestFile() {
         return manifestFile;
+    }
+
+    @Override
+    public String toString(){
+        return getBucketFolderPath()+":"+getStartKey()+"-"+getEndKey();
     }
 }

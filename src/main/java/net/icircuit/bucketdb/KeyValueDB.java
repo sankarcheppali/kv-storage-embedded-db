@@ -1,13 +1,14 @@
 package net.icircuit.bucketdb;
 
 import net.icircuit.bucketdb.exceptions.KvDbOperationFailedException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public interface KeyValueDB<T> {
-    CompletableFuture<Optional<T>> get(String key);
-    CompletableFuture put(String key, T value) throws KvDbOperationFailedException;
-    CompletableFuture put(String key,T value,long ttl) throws KvDbOperationFailedException;
-    CompletableFuture remove(String key) throws KvDbOperationFailedException;
+    Optional<JSONObject> get(String key);
+    void put(String key, T value) throws KvDbOperationFailedException;
+    void put(String key, T value, long ttl) throws KvDbOperationFailedException, IOException;
+    void remove(String key) throws KvDbOperationFailedException;
 }

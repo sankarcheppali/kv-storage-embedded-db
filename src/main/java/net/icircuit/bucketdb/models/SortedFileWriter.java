@@ -1,5 +1,6 @@
 package net.icircuit.bucketdb.models;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import net.icircuit.bucketdb.models.proto.*;
 import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
 
@@ -36,7 +37,7 @@ class  SortedFileWriter{
             Files.createFile(filePath);
         }
         FileOutputStream fileOutputStream = new FileOutputStream(filePath.toFile(), false);
-        DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
+        DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(fileOutputStream));
         //write datablocks
         for (DataBlock dataBlock : dataBlockList) {
             dataBlock.writeTo(dataOutputStream);
@@ -62,7 +63,7 @@ class  SortedFileWriter{
             int startIndex = i * Config.RECORDS_PER_BLOCK;
             int endIndex = records.size()<= startIndex + Config.RECORDS_PER_BLOCK ? records.size() : startIndex + Config.RECORDS_PER_BLOCK;
             DataBlock dataBlock = new DataBlock(records.subList(startIndex, endIndex));
-            LOGGER.info("Datablock created - "+dataBlock);
+            //LOGGER.info("Datablock created - "+dataBlock);
             dataBlockList.add(dataBlock);
         }
         //create data index block

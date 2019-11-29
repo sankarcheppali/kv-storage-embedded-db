@@ -42,23 +42,14 @@ public class BucketDB implements KeyValueDB<JSONObject>{
         return dbs.get(dbPath);
     }
 
-    @Override
-    public CompletableFuture<Optional<JSONObject>> get(String key) {
-        if(key.length() > Config.MAX_KEY_LENGTH){
-            throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
-        }
+    public CompletableFuture<Optional<JSONObject>> getAsync(String key) {
+        checkArguments(key);
         return CompletableFuture.supplyAsync(()-> dbReader.get(key));
     }
 
 
-    @Override
-    public CompletableFuture put(String key, JSONObject value){
-        if(key.length() > Config.MAX_KEY_LENGTH){
-            throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
-        }
-        if(value.toString().getBytes().length > Config.MAX_VALUE_SIZE){
-            throw new IllegalArgumentException(new InvalidValueException("Value size should be less than "+Config.MAX_VALUE_SIZE+" bytes"));
-        }
+    public CompletableFuture putAsync(String key, JSONObject value){
+        checkArguments(key,value);
         return CompletableFuture.runAsync(() -> {
             try {
                 dbWriter.add(key,value);
@@ -69,17 +60,8 @@ public class BucketDB implements KeyValueDB<JSONObject>{
         });
     }
 
-    @Override
-    public CompletableFuture put(String key, JSONObject value, long ttl) {
-        if(key.length() > Config.MAX_KEY_LENGTH){
-            throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
-        }
-        if(ttl < 1){
-            throw new IllegalArgumentException(new InvalidTTLException("TTL should be a positive number"));
-        }
-        if(value.toString().getBytes().length > Config.MAX_VALUE_SIZE){
-            throw new IllegalArgumentException(new InvalidValueException("Value size should be less than "+Config.MAX_VALUE_SIZE+" bytes"));
-        }
+    public CompletableFuture putAsync(String key, JSONObject value, long ttl) {
+        checkArguments(key,value,ttl);
         return CompletableFuture.runAsync(() -> {
             try {
                 dbWriter.add(key,value,ttl);
@@ -90,11 +72,8 @@ public class BucketDB implements KeyValueDB<JSONObject>{
         });
     }
 
-    @Override
-    public CompletableFuture remove(String key) {
-        if(key.length() > Config.MAX_KEY_LENGTH){
-            throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
-        }
+    public CompletableFuture removeAsync(String key) {
+        checkArguments(key);
         return CompletableFuture.runAsync(() -> {
             try {
                 dbWriter.delete(key);
@@ -103,5 +82,76 @@ public class BucketDB implements KeyValueDB<JSONObject>{
                 throw new CompletionException(e);
             }
         });
+    }
+    public boolean checkArguments(String key){
+        if(key.length() > Config.MAX_KEY_LENGTH){
+            throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
+        }
+        return true;
+    }
+    public boolean checkArguments(String key,JSONObject value){
+        if(key.length() > Config.MAX_KEY_LENGTH){
+            throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
+        }
+
+        if(value.toString().getBytes().length > Config.MAX_VALUE_SIZE){
+            throw new IllegalArgumentException(new InvalidValueException("Value size should be less than "+Config.MAX_VALUE_SIZE+" bytes"));
+        }
+        return true;
+    }
+    public boolean checkArguments(String key,JSONObject value,long ttl){
+        if(key.length() > Config.MAX_KEY_LENGTH){
+            throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
+        }
+        if(ttl < 1){
+            throw new IllegalArgumentException(new InvalidTTLException("TTL should be a positive number"));
+        }
+        if(value.toString().getBytes().length > Config.MAX_VALUE_SIZE){
+            throw new IllegalArgumentException(new InvalidValueException("Value size should be less than "+Config.MAX_VALUE_SIZE+" bytes"));
+        }
+        return true;
+    }
+
+    @Override
+    public Optional<JSONObject> get(String key) {
+        checkArguments(key);
+        return dbReader.get(key);
+    }
+
+    @Override
+    public void put(String key, JSONObject value)  {
+        checkArguments(key, value);
+        try {
+            dbWriter.add(key,value);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new KvDbOperationFailedException(e);
+        }
+    }
+
+    @Override
+    public void put(String key, JSONObject value, long ttl) {
+        checkArguments(key,value,ttl);
+        try {
+            dbWriter.add(key,value,ttl);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new KvDbOperationFailedException(e);
+        }
+    }
+
+    @Override
+    public void remove(String key) {
+        checkArguments(key);
+        try {
+            dbWriter.delete(key);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new KvDbOperationFailedException(e);
+        }
+    }
+
+    public long size(){
+        return manifest.size();
     }
 }

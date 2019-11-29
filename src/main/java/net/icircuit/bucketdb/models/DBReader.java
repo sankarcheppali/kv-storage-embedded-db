@@ -48,7 +48,8 @@ public class DBReader {
             }
             return 0;
         });
-        if(index==-1) return Optional.empty();
+        if(index < 0)
+            return Optional.empty();
         return buckets.get(index).getRecord(key).map(dataRecordWrapper -> new JSONObject(dataRecordWrapper.getDataRecord().getRValue()));
     }
     public Collection<Bucket> getBucketList() {

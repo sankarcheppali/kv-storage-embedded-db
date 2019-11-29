@@ -10,6 +10,7 @@ public class Config {
     public static int MAX_SIZE_FOR_MINOR_FILE = 5000000; // ~ 5MB
     public static long MAX_SIZE_FOR_BUCKET = MAX_SIZE_FOR_MINOR_FILE * 5; // ~ 25 MB
     public static long MAX_DB_SIZE = MAX_SIZE_FOR_BUCKET * 40; // ~ 1GB
+    public static long HOUSE_KEEPING_TASK_FREQ = 1*1000;
     private static long mutationCounter = 0;
     public synchronized static long getUniq(){
         mutationCounter += 1;

@@ -32,7 +32,7 @@ public class Bucketizer {
                 runningBucket = bucketIterator.next();
             }
             if(!map.containsKey(runningBucket)){
-                map.put(runningBucket,new LinkedHashSet<DataRecordWrapper>()); // should we take tree set ?
+                map.put(runningBucket,new TreeSet<DataRecordWrapper>()); // should we take tree set ?
             }
             map.get(runningBucket).add(dataRecordWrapper);
         }
