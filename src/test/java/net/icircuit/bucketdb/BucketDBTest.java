@@ -52,7 +52,11 @@ public class BucketDBTest {
     @After
     public void cleanup() throws IOException {
         if(Paths.get(dbPath).toFile().exists()){
-            Files.list(Paths.get(dbPath)).forEach(path -> path.toFile().delete());
+            //delete files
+            Files.walk(Paths.get(dbPath)).filter(Files::isRegularFile).forEach(path -> path.toFile().delete());
+            //delete directories
+            Files.walk(Paths.get(dbPath)).filter(Files::isDirectory).forEach(path -> path.toFile().delete());
+            //delete root
             Paths.get(dbPath).toFile().delete();
         }
     }

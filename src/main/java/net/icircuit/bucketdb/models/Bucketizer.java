@@ -23,7 +23,7 @@ public class Bucketizer {
             bucketSplitList.add(new BucketSplit(null,dataRecordWrappers.stream().collect(Collectors.toList())));
             return bucketSplitList;
         }
-        Map<Bucket,Collection<DataRecordWrapper>> map = new HashMap<>();
+        Map<Bucket,Collection<DataRecordWrapper>> map = new TreeMap<>();
         Iterator<Bucket> bucketIterator = buckets.iterator();
         Bucket runningBucket = bucketIterator.next();
         for(DataRecordWrapper dataRecordWrapper:dataRecordWrappers){
@@ -32,7 +32,7 @@ public class Bucketizer {
                 runningBucket = bucketIterator.next();
             }
             if(!map.containsKey(runningBucket)){
-                map.put(runningBucket,new TreeSet<DataRecordWrapper>()); // should we take tree set ?
+                map.put(runningBucket,new TreeSet<DataRecordWrapper>());
             }
             map.get(runningBucket).add(dataRecordWrapper);
         }

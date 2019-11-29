@@ -16,7 +16,6 @@ public class DBReader {
     public DBReader(MemTable memTable, List<Bucket> buckets) {
         this.memTable = memTable;
         this.buckets = new ArrayList<>(buckets); // list might be mutated else where, we need to have our own copy
-
     }
     public Optional<JSONObject> get(String key){
         //first see if the key is present in memeory
@@ -48,8 +47,9 @@ public class DBReader {
             }
             return 0;
         });
-        if(index < 0)
+        if(index < 0){
             return Optional.empty();
+        }
         return buckets.get(index).getRecord(key).map(dataRecordWrapper -> new JSONObject(dataRecordWrapper.getDataRecord().getRValue()));
     }
     public Collection<Bucket> getBucketList() {

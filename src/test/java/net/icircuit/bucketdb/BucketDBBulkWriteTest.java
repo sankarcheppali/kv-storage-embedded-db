@@ -20,12 +20,6 @@ public class BucketDBBulkWriteTest {
     public void setup() throws IOException {
         cleanup();
         bucketDB = BucketDB.getInstance(dbPath);
-        for(int i=0;i<1000000;i++){
-            JSONObject jsonObject= new JSONObject();
-            jsonObject.put("name","name"+i);
-            jsonObject.put("address","address"+i);
-            bucketDB.put("key"+i,jsonObject);
-        }
     }
     @Test
     public void bulkWrite(){
@@ -40,7 +34,11 @@ public class BucketDBBulkWriteTest {
     @After
     public void cleanup() throws IOException {
         if(Paths.get(dbPath).toFile().exists()){
-            Files.list(Paths.get(dbPath)).forEach(path -> path.toFile().delete());
+            //delete files
+            Files.walk(Paths.get(dbPath)).filter(Files::isRegularFile).forEach(path -> path.toFile().delete());
+            //delete directories
+            Files.walk(Paths.get(dbPath)).filter(Files::isDirectory).forEach(path -> path.toFile().delete());
+            //delete root
             Paths.get(dbPath).toFile().delete();
         }
     }
