@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Optional;
 
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -20,7 +21,7 @@ public class BucketDBRemoveTest {
     public BucketDB bucketDB;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws IOException, InterruptedException {
         cleanup();
         bucketDB = BucketDB.getInstance(dbPath);
         for(int i=0;i<1000000;i++){
@@ -46,14 +47,10 @@ public class BucketDBRemoveTest {
         assertThat("update value should be fetched",optional3.get().getString("name"),is("name700000"));
     }
     @After
-    public void cleanup() throws IOException {
+    public void cleanup() throws IOException, InterruptedException {
         if(Paths.get(dbPath).toFile().exists()){
-            //delete files
-            Files.walk(Paths.get(dbPath)).filter(Files::isRegularFile).forEach(path -> path.toFile().delete());
-            //delete directories
-            Files.walk(Paths.get(dbPath)).filter(Files::isDirectory).forEach(path -> path.toFile().delete());
-            //delete root
-            Paths.get(dbPath).toFile().delete();
+            Thread.sleep(5000);
+            deleteFolder(dbPath);
         }
     }
 }

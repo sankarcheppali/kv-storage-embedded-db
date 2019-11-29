@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -79,6 +81,11 @@ public class SortedFileTest {
     public void delete() throws IOException {
         List<Path> sortefPathList= SortedFile.list(bucketPath);
         sortefPathList.forEach(path -> path.toFile().delete());
+    }
+
+    @AfterClass
+    public static void cleanup() throws IOException {
+        deleteFolder(bucketPath);
     }
 
 }

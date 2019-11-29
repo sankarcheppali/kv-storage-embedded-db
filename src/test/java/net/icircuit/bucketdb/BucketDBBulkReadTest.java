@@ -1,5 +1,4 @@
 package net.icircuit.bucketdb;
-import javafx.util.Pair;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -12,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Optional;
 
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.junit.Assert.*;
 
 public class BucketDBBulkReadTest {
@@ -22,7 +22,7 @@ public class BucketDBBulkReadTest {
     public void setup() throws IOException {
         cleanup();
         bucketDB = BucketDB.getInstance(dbPath);
-        for(int i=0;i<1-000-000;i++){
+        for(int i=0;i<1000000;i++){
             JSONObject jsonObject= new JSONObject();
             jsonObject.put("name","name"+i);
             jsonObject.put("address","address"+i);
@@ -42,12 +42,7 @@ public class BucketDBBulkReadTest {
     @After
     public void cleanup() throws IOException {
         if(Paths.get(dbPath).toFile().exists()){
-            //delete files
-            Files.walk(Paths.get(dbPath)).filter(Files::isRegularFile).forEach(path -> path.toFile().delete());
-            //delete directories
-            Files.walk(Paths.get(dbPath)).filter(Files::isDirectory).forEach(path -> path.toFile().delete());
-            //delete root
-            Paths.get(dbPath).toFile().delete();
+            deleteFolder(dbPath);
         }
     }
 }

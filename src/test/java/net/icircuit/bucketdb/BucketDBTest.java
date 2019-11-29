@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
@@ -80,14 +81,7 @@ public class BucketDBTest {
     }
     @After
     public void cleanup() throws IOException {
-        if (Paths.get(dbPath).toFile().exists()) {
-            //delete files
-            Files.walk(Paths.get(dbPath)).filter(Files::isRegularFile).forEach(path -> path.toFile().delete());
-            //delete directories
-            Files.walk(Paths.get(dbPath)).filter(Files::isDirectory).forEach(path -> path.toFile().delete());
-            //delete root
-            Paths.get(dbPath).toFile().delete();
-        }
+        deleteFolder(dbPath);
     }
 
 }
