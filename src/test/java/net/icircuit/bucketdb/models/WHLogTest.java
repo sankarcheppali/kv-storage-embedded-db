@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 
 public class WHLogTest {
 
-    public static Path dbPath = Paths.get("./");
+    public static Path dbPath = Paths.get("../db");
     public static List<DataRecordWrapper> dataRecordList = new ArrayList<>(Arrays.asList(
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key1").setRValue("value1").build()),
             new DataRecordWrapper(DataRecordProto.DataRecord.newBuilder().setRKey("key2").setRValue("value2").build()),

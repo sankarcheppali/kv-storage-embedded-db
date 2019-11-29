@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * Manages reading,writing sorted files to disk
  */
-public class SortedFile {
+class SortedFile {
     private static String filePrefix="SF";
     private Path sortedFilePath;
     private DataIndexBlock dataIndexBlock;

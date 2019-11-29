@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * take Sorted list of records and create sorted file
  */
 
-public class  SortedFileWriter{
+class  SortedFileWriter{
     private final static Logger LOGGER = Logger.getLogger(SortedFileWriter.class.getName());
 
     private List<DataRecordWrapper> records;

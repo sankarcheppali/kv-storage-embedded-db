@@ -16,7 +16,7 @@ import java.util.stream.Stream;
  */
 
 
-public class MemTable {
+class MemTable {
     private Path dbFolderPath;
     private List<Map<String, DataRecordWrapper>> tableMapList;
     private List<WHLog> whLogList;
