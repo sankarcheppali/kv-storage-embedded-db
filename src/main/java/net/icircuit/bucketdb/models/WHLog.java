@@ -1,5 +1,6 @@
 package net.icircuit.bucketdb.models;
 
+import net.icircuit.bucketdb.FileNameComparator;
 import net.icircuit.bucketdb.models.proto.DataRecordProto.*;
 
 import java.io.*;
@@ -44,6 +45,7 @@ public class WHLog {
     public static List<WHLog> loadWHLFiles(Path dbPath) throws IOException{
         return Files.list(dbPath).filter(Files::isRegularFile)
                 .filter(path -> path.getFileName().toString().startsWith(filePrefix))
+                .sorted(new FileNameComparator())
                 .map(WHLog::new)
                 .collect(Collectors.toList());
     }
