@@ -1,9 +1,6 @@
 package net.icircuit.bucketdb;
 
-import net.icircuit.bucketdb.exceptions.InvalidKeyException;
-import net.icircuit.bucketdb.exceptions.InvalidTTLException;
-import net.icircuit.bucketdb.exceptions.InvalidValueException;
-import net.icircuit.bucketdb.exceptions.KvDbOperationFailedException;
+import net.icircuit.bucketdb.exceptions.*;
 import net.icircuit.bucketdb.models.*;
 import org.json.JSONObject;
 
@@ -83,13 +80,13 @@ public class BucketDB implements KeyValueDB<JSONObject>{
             }
         });
     }
-    public boolean checkArguments(String key){
+    private boolean checkArguments(String key){
         if(key.length() > Config.MAX_KEY_LENGTH){
             throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
         }
         return true;
     }
-    public boolean checkArguments(String key,JSONObject value){
+    private boolean checkArguments(String key,JSONObject value){
         if(key.length() > Config.MAX_KEY_LENGTH){
             throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
         }
@@ -99,7 +96,7 @@ public class BucketDB implements KeyValueDB<JSONObject>{
         }
         return true;
     }
-    public boolean checkArguments(String key,JSONObject value,long ttl){
+    private boolean checkArguments(String key,JSONObject value,long ttl){
         if(key.length() > Config.MAX_KEY_LENGTH){
             throw new IllegalArgumentException(new InvalidKeyException("Key length should be less than or equal to "+Config.MAX_KEY_LENGTH));
         }
@@ -112,12 +109,23 @@ public class BucketDB implements KeyValueDB<JSONObject>{
         return true;
     }
 
+    /**
+     * Gets the value associated with this key
+     * @param key string with less than or equal to 32 chars
+     * @return
+     */
     @Override
     public Optional<JSONObject> get(String key) {
         checkArguments(key);
         return dbReader.get(key);
     }
 
+    /**
+     * Store a given key-value pair in the storage. Put will update
+     *  if the record is already is present
+     * @param key - string with less than or equal to 32 chars
+     * @param value - JSONObject value, max size is 16KB
+     */
     @Override
     public void put(String key, JSONObject value)  {
         checkArguments(key, value);
@@ -129,6 +137,13 @@ public class BucketDB implements KeyValueDB<JSONObject>{
         }
     }
 
+    /**
+     * Store a given key-value pair in the storage. Put will update
+     * if the record is already is present
+     * @param key - string with less than or equal to 32 chars
+     * @param value - JSONObject value, max size is 16KB
+     * @param ttl - specifies how long this entry is valid in milli seconds
+     */
     @Override
     public void put(String key, JSONObject value, long ttl) {
         checkArguments(key,value,ttl);
@@ -140,15 +155,65 @@ public class BucketDB implements KeyValueDB<JSONObject>{
         }
     }
 
+    /**
+     * deletes the value associated with given key, will not throw any error if the key is not present
+     * @param key
+     */
     @Override
     public void remove(String key) {
         checkArguments(key);
         try {
             dbWriter.delete(key);
         } catch (IOException e) {
+
             e.printStackTrace();
             throw new KvDbOperationFailedException(e);
         }
+    }
+
+    /**
+     * similar to put, but thorws exception is key is already present
+     * @param key
+     * @param value
+     */
+    public void create(String key,JSONObject value){
+        Optional<JSONObject> optional = get(key);
+        if(optional.isPresent()){
+            throw new DuplicateKeyException(key +" is already present");
+        }
+        if(size()>Config.MAX_DB_SIZE){
+            throw new MaxSizeReachedException("Max allowed DB size is "+Config.MAX_DB_SIZE);
+        }
+        put(key,value);
+    }
+
+    /**
+     * similar to put, but throws exception is key is already present
+     *
+     * @param key
+     * @param value
+     * @param ttl
+     */
+    public void create(String key,JSONObject value,long ttl){
+        Optional<JSONObject> optional = get(key);
+        if(optional.isPresent()){
+            throw new DuplicateKeyException(key +" is already present");
+        }
+        if(size()>Config.MAX_DB_SIZE){
+            throw new MaxSizeReachedException("Max allowed DB size is "+Config.MAX_DB_SIZE);
+        }
+        put(key,value,ttl);
+    }
+    /**
+     * similar to remove, but throws exception is key is not present
+     * @param key
+     */
+    public void delete(String key){
+        Optional<JSONObject> optional = get(key);
+        if(!optional.isPresent()){
+            throw new KeyNotFoundException(key +" is not present");
+        }
+        remove(key);
     }
 
     public long size(){

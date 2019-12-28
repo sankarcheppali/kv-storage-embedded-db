@@ -28,7 +28,7 @@ public class Bucketizer {
         Bucket runningBucket = bucketIterator.next();
         for(DataRecordWrapper dataRecordWrapper:dataRecordWrappers){
             DataRecord dataRecord = dataRecordWrapper.getDataRecord();
-            if(bucketIterator.hasNext() && runningBucket.getEndKey().compareTo(dataRecord.getRKey()) < 0  ){
+            while(bucketIterator.hasNext() && runningBucket.getEndKey().compareTo(dataRecord.getRKey()) < 0  ){
                 runningBucket = bucketIterator.next();
             }
             if(!map.containsKey(runningBucket)){

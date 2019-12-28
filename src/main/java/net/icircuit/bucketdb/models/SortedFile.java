@@ -87,7 +87,7 @@ class SortedFile {
                 return key;
             }
         });
-        if(index == -1) return Optional.empty();
+        if(index < 0) return Optional.empty();
         DataBlockIndexRecordWrapper dataBlockIndexRecordWrapper = dataBlockIndexRecordWrapperList.get(index);
         DataBlockReader dataBlockReader = sortedFileReader.dataBlockReader(dataBlockIndexRecordWrapper.getIndexRecord());
         DataRecordIndexBlockWrapper dataRecordIndexBlockWrapper = new DataRecordIndexBlockWrapper(dataBlockReader.readRecordIndexBlock());

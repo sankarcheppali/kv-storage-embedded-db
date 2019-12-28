@@ -1,12 +1,10 @@
 package net.icircuit.bucketdb.models;
 
-import javafx.util.Pair;
+
 import net.icircuit.bucketdb.models.proto.DataRecordProto;
 import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import net.icircuit.bucketdb.models.wrappers.Pair;
+import org.junit.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 public class MemTableTest {
@@ -80,9 +79,10 @@ public class MemTableTest {
         assertTrue("memtable should have new whllog",!whLogAfterSpill.equals(whLogBeforeSpil));
     }
 
+
     @Before
     @After
-    public void cleanup() throws IOException {
+    public void delete() throws IOException {
         WHLog.loadWHLFiles(dbPath).forEach(whLog -> {
             try {
                 whLog.delete();
@@ -90,5 +90,10 @@ public class MemTableTest {
                 e.printStackTrace();
             }
         });
+    }
+
+    @AfterClass
+    public static void cleanup() throws IOException {
+        deleteFolder(dbPath);
     }
 }

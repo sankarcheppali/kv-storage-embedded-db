@@ -2,8 +2,11 @@ package net.icircuit.bucketdb.models;
 
 import net.icircuit.bucketdb.models.proto.DataRecordProto;
 import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.hamcrest.CoreMatchers.*;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -57,5 +60,15 @@ public class WHLogTest {
          whLog.delete();
     }
 
+    @AfterClass
+    public  static void delete() throws IOException {
+        Bucket.list(dbPath).forEach(path -> {
+            try {
+                deleteFolder(path);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
 }

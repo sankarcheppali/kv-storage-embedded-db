@@ -1,10 +1,11 @@
 package net.icircuit.bucketdb.models;
 
-import javafx.util.Pair;
+
 import net.icircuit.bucketdb.FileNameComparator;
 import net.icircuit.bucketdb.models.proto.ManifestProto;
 import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
 import net.icircuit.bucketdb.models.wrappers.KeyRange;
+import net.icircuit.bucketdb.models.wrappers.Pair;
 
 import java.io.IOException;
 import java.io.OutputStream;

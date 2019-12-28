@@ -1,5 +1,4 @@
 package net.icircuit.bucketdb;
-import javafx.util.Pair;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -9,8 +8,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Optional;
 
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.junit.Assert.*;
 
 public class BucketDBBulkReadTest {
@@ -30,20 +31,18 @@ public class BucketDBBulkReadTest {
     }
     @Test
     public void bulkRead(){
+        Date start = new Date();
         for(int i=0;i<1000000;i++){
             Optional<JSONObject> optional = bucketDB.get("key"+i);
             assertTrue("missing key :"+"key"+i,optional.isPresent());
         }
+        Date end = new Date();
+        System.out.println("Read time "+(end.getTime()-start.getTime()));
     }
     @After
     public void cleanup() throws IOException {
         if(Paths.get(dbPath).toFile().exists()){
-            //delete files
-            Files.walk(Paths.get(dbPath)).filter(Files::isRegularFile).forEach(path -> path.toFile().delete());
-            //delete directories
-            Files.walk(Paths.get(dbPath)).filter(Files::isDirectory).forEach(path -> path.toFile().delete());
-            //delete root
-            Paths.get(dbPath).toFile().delete();
+            deleteFolder(dbPath);
         }
     }
 }

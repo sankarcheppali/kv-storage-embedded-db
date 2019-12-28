@@ -1,10 +1,11 @@
 package net.icircuit.bucketdb.models;
 
-import javafx.util.Pair;
+
 import net.icircuit.bucketdb.FileNameComparator;
 import net.icircuit.bucketdb.models.proto.ManifestProto;
 import net.icircuit.bucketdb.models.proto.ManifestProto.*;
 import net.icircuit.bucketdb.models.wrappers.DataRecordWrapper;
+import net.icircuit.bucketdb.models.wrappers.Pair;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -88,11 +89,11 @@ public class Manifest {
             bucketsOnDisk.stream().filter(path -> !bucketPathList.contains(path))
                     .forEach(path -> {
                         try {
-                            Files.list(path).forEach(path1 -> path1.toFile().delete());
+                            Files.walk(path).filter(Files::isRegularFile).forEach(path1 -> path1.toFile().delete());
                             Files.deleteIfExists(path);
                             LOGGER.info("deleted bucket "+path);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
                         }
                     });
 
@@ -146,13 +147,14 @@ public class Manifest {
         }
         bucketHouseKeeping();
         Date end = new Date();
-        dbReader.setBuckets(bucketList);
+        //dbReader.setBuckets(bucketList);
+        cleanUpDB();
         LOGGER.info("housekeeping task completed,took "+(end.getTime() - start.getTime()));
     }
     private synchronized void memTableHouseKeeping() throws IOException {
         Pair<WHLog, Map<String, DataRecordWrapper>> whLogMapPair= memTable.whlogReadyForSpill();
         Bucketizer bucketizer = new Bucketizer(whLogMapPair.getValue().values());
-        List<BucketSplit> bucketSplitList = bucketizer.bucketize(bucketList);
+        List<BucketSplit> bucketSplitList = bucketizer.bucketize(new ArrayList<>(bucketList));
         bucketSplitList.forEach(bucketSplit -> {
             if(bucketSplit.getBucket()!=null){
                 bucketSplit.getBucket().createSortedFile(bucketSplit.getDataRecordWrapperList());
@@ -187,7 +189,7 @@ public class Manifest {
     private synchronized void removeBucket(Bucket bucket){
         bucketList.remove(bucket);
         bucketList.sort(Bucket::compareTo);
-        //dbReader.setBuckets(bucketList);
+        dbReader.setBuckets(bucketList);
         bucketPathList.remove(bucket.getBucketFolderPath());
         LOGGER.info("removing bucket "+bucket);
         saveManifest();
@@ -195,13 +197,19 @@ public class Manifest {
     private synchronized void addBucket(Bucket bucket){
         bucketList.add(bucket);
         bucketList.sort(Bucket::compareTo);
-        //dbReader.setBuckets(bucketList);
+        dbReader.setBuckets(bucketList);
         bucketPathList.add(bucket.getBucketFolderPath());
         LOGGER.info("adding bucket "+bucket);
         saveManifest();
     }
+
+    /**
+     * returns approximate db size
+     * @return
+     */
     public long size(){
-        return bucketList.stream().map(Bucket::size).reduce(0L, (a, b) -> a + b);
+        return bucketList.stream().map(Bucket::size).reduce(0L, (a, b) -> a + b)
+                +memTable.whLogSize();
     }
     private Pair<Path, DBManifestFile> readValidManifest(List<Path> manifestFileList){
        List<Pair<Path,DBManifestFile>> dbManifestFileList =manifestFileList.stream().map(path -> {

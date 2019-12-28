@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.junit.Assert.*;
 
 
@@ -29,17 +30,12 @@ public class BucketDBBulkWriteTest {
             jsonObject.put("address","address"+i);
             bucketDB.put("key"+i,jsonObject);
         }
-        assertTrue("size of the db shold be more than 100MB",bucketDB.size()>100-0000-000);
+        assertTrue("size of the db should be more than 10MB",bucketDB.size()>10000000);
     }
     @After
     public void cleanup() throws IOException {
         if(Paths.get(dbPath).toFile().exists()){
-            //delete files
-            Files.walk(Paths.get(dbPath)).filter(Files::isRegularFile).forEach(path -> path.toFile().delete());
-            //delete directories
-            Files.walk(Paths.get(dbPath)).filter(Files::isDirectory).forEach(path -> path.toFile().delete());
-            //delete root
-            Paths.get(dbPath).toFile().delete();
+            deleteFolder(dbPath);
         }
     }
 }

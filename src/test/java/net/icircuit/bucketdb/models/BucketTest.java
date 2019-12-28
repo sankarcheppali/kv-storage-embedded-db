@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.icircuit.bucketdb.Util.deleteFolder;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 public class BucketTest {
@@ -97,8 +98,7 @@ public class BucketTest {
     public  void delete() throws IOException {
         Bucket.list(dbPath).forEach(path -> {
             try {
-                Files.list(path).forEach(path1 -> path1.toFile().delete());
-                path.toFile().delete();
+                deleteFolder(path);
             } catch (Exception e) {
                 e.printStackTrace();
             }
