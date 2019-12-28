@@ -1,6 +1,8 @@
 ## Disk Based Key-Value storage (Experimental)
 
 ### Features
+* writes are constant time and reads are ln(n) time
+* uses WAL for crash recovery
 * key is a string and value is JSONObject
 * data is sorted by key
 * operations available : put,get,remove (update can done using put)
